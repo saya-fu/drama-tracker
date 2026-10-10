@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ドラマ管理</title>
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ドラマ管理">
+<meta name="theme-color" content="#2a56a6">
+<style>
+:root{--bg:#f3efe7;--card:#fffdf8;--tx:#1d1b17;--sub:#8a8272;--ln:#e4ddce;--chip:#ece6d9;--ac:#2a56a6;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c111d;--card:#151c2e;--tx:#eef0f7;--sub:#8a94b0;--ln:#25304b;--chip:#212b45;--ac:#5b8bdc}}
+:root[data-theme="dark"]{--bg:#0c111d;--card:#151c2e;--tx:#eef0f7;--sub:#8a94b0;--ln:#25304b;--chip:#212b45;--ac:#5b8bdc}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif;font-size:16px;line-height:1.4}
+main{max-width:640px;margin:0 auto;padding:20px 16px 110px}
+.hd small{color:var(--sub);font-size:13px;font-weight:600;letter-spacing:.04em}
+.hd h1{font-size:30px;font-weight:800;margin:2px 0 16px;letter-spacing:-.02em}
+.days{display:grid;grid-template-columns:repeat(9,1fr);gap:4px;background:var(--card);padding:5px;border-radius:16px;border:1px solid var(--ln)}
+.d{position:relative;border:0;background:none;color:var(--sub);font-size:13px;font-weight:700;padding:9px 0;border-radius:12px}
+.d.on{background:var(--ac);color:#fff}
+.d.td::after{content:"";position:absolute;left:50%;bottom:3px;width:4px;height:4px;margin-left:-2px;border-radius:2px;background:var(--ac)}
+.d.on.td::after{background:#fff}
+.sv{display:flex;gap:8px;overflow-x:auto;margin:14px -16px 6px;padding:2px 16px 6px;scrollbar-width:none}
+.sv::-webkit-scrollbar{display:none}
+.f{flex:none;border:0;background:var(--chip);color:var(--tx);border-radius:18px;padding:7px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.f i{width:8px;height:8px;border-radius:4px;background:var(--c,var(--sub))}
+.f.on{background:var(--tx);color:var(--bg)}
+.card{--c:var(--sub);position:relative;background:var(--card);border-radius:20px;padding:16px 16px 14px 20px;margin-top:12px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px rgba(60,45,20,.08);overflow:hidden}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c)}
+.top{display:block}
+.name{font-weight:800;font-size:18px;letter-spacing:-.01em}
+.meta{display:flex;gap:6px;margin-top:6px;align-items:center;flex-wrap:wrap}
+.b{font-size:11px;font-weight:800;color:#fff;background:var(--c);padding:2px 9px;border-radius:10px}
+.w{font-size:12px;color:var(--sub);font-weight:600}
+.menu{background:none;border:0;color:var(--sub);font-size:20px;padding:0 4px;line-height:1}
+.bar{height:5px;background:var(--chip);border-radius:3px;margin:14px 0 4px;overflow:hidden}
+.bar div{height:100%;background:var(--c);border-radius:3px;transition:width .25s}
+.prog{font-size:12px;color:var(--sub);font-weight:700;margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tx{flex:1;min-width:0}
+.mn{position:absolute;right:12px;bottom:10px;font-size:20px;padding:6px 8px}
+.thumb{position:relative;display:block;float:right;margin:-10px -12px 0 8px;width:130px;height:116px;border-radius:14px;overflow:hidden;background:var(--chip);color:var(--sub);font-size:12px;font-weight:700;text-align:center;line-height:1.3;padding-top:46px;box-sizing:border-box;cursor:pointer}
+.thumb img{display:block;position:absolute;top:0;left:0;width:130px;height:116px;object-fit:cover;margin:0}
+.thumb input{position:absolute;top:0;left:0;width:130px;height:116px;opacity:0;font-size:0;cursor:pointer}
+.eps{display:block;margin-top:8px;margin-bottom:-8px}
+.eps .ep{margin:0 8px 8px 0;vertical-align:top}
+.ep{min-width:48px;min-height:48px;padding:4px 6px;border-radius:14px;border:0;background:var(--chip);color:var(--sub);font-size:15px;font-weight:800;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15}.ep small{font-size:10px;font-weight:600;opacity:.85}.ep.fut{opacity:.5;border:2px dashed var(--sub);background:none}
+.ep.on{background:var(--c);color:#fff}
+.card.done{opacity:.6}
+.fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));height:56px;padding:0 22px;border-radius:28px;border:0;background:var(--ac);color:#fff;font-size:16px;font-weight:800;box-shadow:0 8px 24px rgba(42,86,166,.45)}
+.ov{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:100;background:rgba(10,10,20,.5);align-items:flex-end;justify-content:center}.ov.show{display:flex}.sheet{width:100%;max-width:480px;max-height:92%;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--card);color:var(--tx);border-radius:24px 24px 0 0;padding:22px 22px calc(22px + env(safe-area-inset-bottom,0px))}
+
+label{display:block;font-size:12px;font-weight:700;color:var(--sub);margin:16px 0 6px}
+input,select{width:100%;font-size:16px;padding:12px;border-radius:12px;border:0;background:var(--chip);color:var(--tx)}
+.pick{display:flex;flex-wrap:wrap;gap:8px}
+.pick button{border:2px solid transparent;background:var(--chip);color:var(--tx);border-radius:14px;padding:9px 13px;font-size:14px;font-weight:700}
+.pick button.on{background:var(--c);color:#fff}
+.row{display:flex;gap:10px}.row>div{flex:1}
+.btns{display:flex;gap:10px;margin-top:22px}
+.btns button{flex:1;padding:14px;border-radius:14px;border:0;background:var(--chip);color:var(--tx);font-size:16px;font-weight:700}
+.btns .pri{background:var(--ac);color:#fff}
+.btns .del{flex:none;color:#e5484d}
+.toast{display:none;position:fixed;left:16px;right:16px;bottom:calc(90px + env(safe-area-inset-bottom,0px));background:var(--tx);color:var(--bg);border-radius:14px;padding:12px 14px;font-size:14px;font-weight:600;justify-content:space-between;align-items:center;z-index:50}.toast.show{display:flex}.toast button{background:none;border:0;color:#8fb3f5;font-weight:800;font-size:15px;padding:4px 0 4px 12px}
+.empty{color:var(--sub);text-align:center;margin-top:60px;font-size:14px}
+.note{color:var(--sub);font-size:11px;text-align:center;margin-top:28px}
+</style>
+</head>
+<body>
+<main>
+<div class="hd"><small id="date"></small><h1><span id="ttlt">2026秋ドラマ</span> <button class="menu" id="ttle" aria-label="タイトル変更" style="font-size:18px">✎</button></h1></div>
+<div class="days" id="days"></div>
+<div class="sv" id="sv"></div>
+<div id="list"></div>
+<div class="note" id="note"></div>
+</main>
+<button class="fab" id="add">＋ 追加</button>
+
+<div id="dlg" class="ov"><div class="sheet">
+<div id="dtitle" style="font-weight:800;font-size:20px">ドラマを追加</div>
+<label>タイトル</label><input id="fName" placeholder="例：silent">
+<label>配信サービス</label><div class="pick" id="pSvc"></div>
+<label>初回放送日（任意）</label><input id="fStart" type="date">
+<button type="button" id="rmimg" hidden style="margin-top:12px;background:none;border:0;color:#d64545;font-size:14px;font-weight:700;padding:0">画像を削除</button>
+<div class="row">
+<div><label>曜日</label><select id="fDay"><option>月</option><option>火</option><option>水</option><option>木</option><option>金</option><option>土</option><option>日</option><option>不定</option></select></div>
+
+</div>
+<div class="btns"><button class="del" id="del" hidden>削除</button><button id="cancel">閉じる</button><button class="pri" id="save">保存</button></div>
+</div></div>
+
+<div id="toast" class="toast"></div>
+<div id="tdlg" class="ov"><div class="sheet"><div style="font-weight:800;font-size:20px">タイトルを変更</div><label>タイトル</label><input id="fTitle" placeholder="例：2026冬ドラマ"><div class="btns"><button id="tcancel">閉じる</button><button class="pri" id="tsave">保存</button></div></div></div>
+<script>
+const SV={"Netflix":"#e50914","TVer":"#4db8ff","Hulu":"#1ce783","U-NEXT":"#1d3175","Prime Video":"#0a6ebd","ABEMA":"#f5b400"};
+const SVN=Object.keys(SV);
+const NORM={"ネットフリックス":"Netflix","ティーバー":"TVer","フールー":"Hulu","ユーネクスト":"U-NEXT","アベマ":"ABEMA","プライム":"Prime Video","tver":"TVer","hulu":"Hulu","u-next":"U-NEXT","unext":"U-NEXT","prime video":"Prime Video","amazon prime video":"Prime Video","abema":"ABEMA","netflix":"Netflix"};
+const DAYS=["月","火","水","木","金","土","日","不定"];
+const jd=["日","月","火","水","木","金","土"], now=new Date(), todayName=jd[now.getDay()];
+let dramas=[],dayF="全部",svcF="すべて",editId=null,selSvc="",ref=null,timer=null;
+const $=id=>document.getElementById(id);
+$("dlg").showModal=function(){this.classList.add("show")};
+$("dlg").close=function(){this.classList.remove("show")};
+$("dlg").addEventListener("click",e=>{if(e.target===$("dlg"))$("dlg").close()});
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const col=s=>SV[s]||"#8a8a99";
+$("date").textContent=`${now.getMonth()+1}月${now.getDate()}日（${todayName}）`;
+
+function fix(d){const s=String(d.svc||"").toLowerCase();let k=NORM[s];if(!k&&s)for(const key in NORM)if(s.includes(key)){k=NORM[key];break}if(k)d.svc=k;return d}
+function lsGet(){try{return JSON.parse(localStorage.getItem("dramas")||"null")}catch(e){return null}}
+function persist(){touched=true;try{localStorage.setItem("title",title)}catch(e){}
+  try{localStorage.setItem("dramas",JSON.stringify(dramas))}catch(e){msg("端末の保存容量がいっぱいです。画像を減らしてください")}
+  if(!ref)return;clearTimeout(timer);
+  timer=setTimeout(async()=>{try{await ref.set({dramas,title})}catch(e){console.error(e);msg("クラウド保存に失敗しました："+(e&&e.message||e))}},400);
+}
+async function init(){
+  dramas=(lsGet()||[]).map(fix);try{title=localStorage.getItem("title")||title}catch(e){}setTitle();render();
+  try{
+    const user=await claude.use("user"),db=await claude.use("db");
+    if(user&&db){const id=await user.id();
+      if(id){ref=db.doc("data/users/"+id+"/state");const s=await ref.get();
+        if(!touched&&s.exists&&s.data()&&Array.isArray(s.data().dramas)){dramas=JSON.parse(JSON.stringify(s.data().dramas)).map(fix);if(s.data().title)title=s.data().title;try{localStorage.setItem("dramas",JSON.stringify(dramas));localStorage.setItem("title",title)}catch(e){}}
+        else if(dramas.length)await ref.set({dramas,title});}}
+  }catch(e){console.error(e)}
+  setTitle();$("note").textContent=ref?"データはアカウントに保存されます":"このブラウザ内にのみ保存されます";
+  render();
+}
+
+function render(){
+  $("days").innerHTML=["全部",...DAYS].map(d=>`<button class="d ${d===dayF?"on":""} ${d===todayName?"td":""}" data-day="${d}">${d==="不定"?"他":d}</button>`).join("");
+  $("sv").innerHTML=["すべて",...SVN].map(s=>`<button class="f ${s===svcF?"on":""}" style="--c:${col(s)}" data-svc="${s}">${s==="すべて"?"":"<i></i>"}${s}</button>`).join("");
+  const vis=dramas.filter(d=>(dayF==="全部"||d.day===dayF)&&(svcF==="すべて"||d.svc===svcF));
+  vis.sort((a,b)=>{const x=nextKey(a),y=nextKey(b);return x===y?0:x<y?-1:1});
+  $("list").innerHTML=vis.map(card).join("")||'<div class="empty">ドラマがありません<br>右下の「＋ 追加」から登録できます</div>';
+}
+function nextEp(d){let i=1;while(d.watched.includes(i))i++;return i}
+function nextKey(d){return d.start?epDate(d,nextEp(d)).getTime():Infinity}
+function pd(s){const[a,b,c]=s.split("-").map(Number);return new Date(a,b-1,c)}
+function epDate(d,i){const x=pd(d.start);x.setDate(x.getDate()+7*(i-1));return x}
+function fmtD(x){return (x.getMonth()+1)+"/"+x.getDate()}
+function dt(d,i){return d.start?`<small>${fmtD(epDate(d,i))}</small>`:""}
+function airedCount(d){if(!d.start)return 0;const t=new Date();t.setHours(0,0,0,0);return Math.max(0,Math.floor(Math.round((t-pd(d.start))/864e5)/7)+1)}
+function nextChip(d,m){return d.start?`<span class="ep fut">${m+1}${dt(d,m+1)}</span>`:`<button class="ep" style="background:none;border:2px dashed var(--c);color:var(--c)" data-id="${d.id}" data-next="1">＋</button>`}
+function card(d){
+  const n=d.watched.length,m=Math.max(airedCount(d),...d.watched),done=false;let ch="";
+  for(let i=1;i<=m;i++)ch+=`<button class="ep ${d.watched.includes(i)?"on":""}" style="--c:${col(d.svc)}" data-id="${d.id}" data-ep="${i}">${i}${dt(d,i)}</button>`;
+  return `<div class="card ${done?"done":""}" style="--c:${col(d.svc)}"><div class="top"><label class="thumb">${d.img?`<img src="${d.img}" alt="">`:"＋<br>画像"}<input type="file" accept="image/*" data-img="${d.id}"></label><div class="tx"><div class="name">${esc(d.name)}</div>
+  <div class="meta"><span class="b">${esc(d.svc||"配信先未設定")}</span><span class="w">${d.day==="不定"?"不定期":d.day+"曜"}${d.start?"・"+fmtD(pd(d.start))+"スタート":""}</span></div></div>
+  </div>
+  <div class="prog"><span>${n}話 視聴済み${d.start?` ・ 次は第${nextEp(d)}話（${fmtD(epDate(d,nextEp(d)))}）`:""}</span></div>
+  <div class="eps">${ch}${nextChip(d,m)}</div><button class="menu mn" data-edit="${d.id}">⋯</button></div>`;
+}
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button");if(!t)return;
+  if(t.dataset.day){dayF=t.dataset.day;render();return}
+  if(t.dataset.svc){svcF=t.dataset.svc;render();return}
+  if(t.dataset.ep){const d=dramas.find(x=>x.id===t.dataset.id),n=+t.dataset.ep,i=d.watched.indexOf(n);
+    toast(d,n,i>=0);i>=0?d.watched.splice(i,1):d.watched.push(n);persist();render();return}
+  if(t.dataset.next){const d=dramas.find(x=>x.id===t.dataset.id);const nn=Math.max(0,...d.watched)+1;toast(d,nn,false);d.watched.push(nn);persist();render();return}
+  if(t.dataset.edit)openDlg(dramas.find(x=>x.id===t.dataset.edit));
+});
+function pickRender(){$("pSvc").innerHTML=SVN.map(s=>`<button type="button" class="${s===selSvc?"on":""}" style="--c:${col(s)}" data-p="${s}">${s}</button>`).join("")}
+$("pSvc").onclick=e=>{const b=e.target.closest("button");if(!b)return;selSvc=selSvc===b.dataset.p?"":b.dataset.p;pickRender()};
+function openDlg(d){
+  editId=d?d.id:null;$("dtitle").textContent=d?"編集":"ドラマを追加";$("del").hidden=!d;
+  $("fName").value=d?d.name:"";selSvc=d?d.svc:"";pickRender();
+  $("fDay").value=d?d.day:(todayName);$("fStart").value=d&&d.start?d.start:"";delete $("del").dataset.ask;$("rmimg").hidden=!(d&&d.img);$("del").textContent="削除";$("dlg").showModal();
+}
+$("add").onclick=()=>openDlg(null);
+$("fStart").onchange=()=>{const v=$("fStart").value;if(v)$("fDay").value=jd[pd(v).getDay()]};
+$("cancel").onclick=()=>$("dlg").close();
+$("del").onclick=()=>{const d=dramas.find(x=>x.id===editId);if(!d)return;if(!$("del").dataset.ask){$("del").dataset.ask="1";$("del").textContent="本当に削除";return}dramas=dramas.filter(x=>x!==d);persist();render();$("dlg").close()};
+$("save").onclick=()=>{
+  const name=$("fName").value.trim();if(!name){$("fName").focus();return}
+  
+  const v={name,svc:selSvc,day:$("fDay").value,start:$("fStart").value};
+  if(editId){const d=dramas.find(x=>x.id===editId);Object.assign(d,v)}
+  else dramas.push({id:"d"+Date.now().toString(36),watched:[],...v});
+  persist();render();$("dlg").close();
+};
+let title="2026秋ドラマ",tt=null,undoFn=null,touched=false;
+function setTitle(){$("ttlt").textContent=title;document.title=title}
+$("ttle").onclick=()=>{$("fTitle").value=title;$("tdlg").classList.add("show")};
+$("tcancel").onclick=()=>$("tdlg").classList.remove("show");
+$("tdlg").addEventListener("click",e=>{if(e.target===$("tdlg"))$("tdlg").classList.remove("show")});
+$("tsave").onclick=()=>{const v=$("fTitle").value.trim();if(v){title=v;setTitle();persist()}$("tdlg").classList.remove("show")};
+function toast(d,n,wasOn){
+  const el=$("toast");
+  el.innerHTML=`第${n}話を${wasOn?"未視聴に戻しました":"視聴済みにしました"}<button id="undo">元に戻す</button>`;
+  el.classList.add("show");
+  undoFn=()=>{const i=d.watched.indexOf(n);if(wasOn){if(i<0)d.watched.push(n)}else if(i>=0)d.watched.splice(i,1);persist();render();el.classList.remove("show")};
+  clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),5000);
+}
+$("toast").addEventListener("click",e=>{if(e.target.id==="undo"&&undoFn)undoFn()});
+function msg(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),4000)}
+document.addEventListener("securitypolicyviolation",e=>msg("ブロック: "+e.violatedDirective+" "+String(e.blockedURI||"").slice(0,24)));
+function diag(id,tag){const d=dramas.find(x=>x.id===id);const inp=document.querySelector('.thumb input[data-img="'+id+'"]');const i=inp&&inp.parentElement.querySelector("img");const r=i&&i.getBoundingClientRect();return tag+"：データ"+(d&&d.img?"あり":"なし")+"・カードの画像"+(i?"あり"+Math.round(r.width)+"x"+Math.round(r.height)+(i.complete?"":"未読込"):"なし")}
+function toThumb(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const W=200,H=178,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");const r=Math.max(W/im.width,H/im.height),w=im.width*r,h=im.height*r;x.drawImage(im,(W-w)/2,(H-h)/2,w,h);let diff=0;try{const p=x.getImageData(0,0,W,H).data;for(let i=4;i<p.length;i+=148)diff+=Math.abs(p[i]-p[0])+Math.abs(p[i+1]-p[1])+Math.abs(p[i+2]-p[2])}catch(e){diff=1}if(diff===0){res(fr.result.length<150000?fr.result:"BLANK")}else res(c.toDataURL("image/jpeg",.72))};im.onerror=rej;im.src=fr.result};fr.onerror=rej;fr.readAsDataURL(file)})}
+document.addEventListener("change",async e=>{
+  const id=e.target.dataset&&e.target.dataset.img;if(!id)return;
+  const f=e.target.files[0];if(!f)return;
+  const d=dramas.find(x=>x.id===id);if(!d)return;
+  try{const u=await toThumb(f);if(u==="BLANK"){msg("この端末では画像を縮小できませんでした");return}const chk=await new Promise(r=>{const t=new Image();t.onload=()=>r(t.naturalWidth+"x"+t.naturalHeight);t.onerror=()=>r("失敗");t.src=u});const old=d.img;d.img=u;msg("画像を設定しました（"+Math.round(u.length/1024)+"KB・読込"+chk+"）");$("toast").insertAdjacentHTML("afterbegin",`<img src="${u}" alt="" style="width:34px;height:48px;object-fit:cover;border-radius:6px;margin-right:10px">`);
+    if(JSON.stringify({dramas,title}).length>2500000){d.img=old;msg("画像の保存容量がいっぱいです。使わない画像を削除してください");return}
+    persist();render();
+  }catch(err){console.error(err);msg("画像を読み込めませんでした")}
+});
+$("rmimg").onclick=()=>{const d=dramas.find(x=>x.id===editId);if(d){delete d.img;persist();render()}$("rmimg").hidden=true};
+init();
+</script>
+</body>
+</html>
